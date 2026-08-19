@@ -146,7 +146,7 @@ async function syncBrandsFromMetricool(){
     const apiKey=masterBrand.metricool_api_key;
     const userId=masterBrand.metricool_user_id;
 
-    const r=await fetch(`https://app.metricool.com/api/admin/simpleProfiles?userId=${userId}&blogId=${userId}`,{headers:{'X-Mc-Auth':apiKey}});
+    const r=await fetch(`https://app.metricool.com/api/admin/simpleProfiles?userId=${userId}&blogId=${masterBrand.metricool_blog_id||userId}`,{headers:{'X-Mc-Auth':apiKey}});
     if(!r.ok)return{synced:0,error:`Metricool error ${r.status}`};
 
     const data=await r.json();
@@ -337,6 +337,11 @@ app.post('/api/metricool/test',auth,async(req,res)=>{
 
 app.post('/api/metricool/sync-brands',auth,async(req,res)=>{
   if(req.user.role!=='admin')return res.status(403).json({error:'Sin permiso'});
+  // If api_key passed directly, save it first then sync
+  const{brand_id,api_key,user_id}=req.body;
+  if(api_key&&user_id&&brand_id){
+    await db.query('UPDATE brands SET metricool_api_key=$1,metricool_user_id=$2 WHERE id=$3',[api_key,user_id,brand_id]);
+  }
   const result=await syncBrandsFromMetricool();
   res.json({ok:true,...result});
 });
