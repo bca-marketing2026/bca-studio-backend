@@ -176,10 +176,14 @@ async function syncBrandsFromMetricool(){
     let synced=0;
     for(const p of profiles){
       const blogId=(p.id||p.blogId||p.blog_id||'').toString();
-      const name=p.name||p.blogName||p.blog_name||p.title||'Marca '+blogId;
-      const handle=(p.handle||p.username||p.screen_name||name).toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,50);
-      const brandId=handle||'brand-'+blogId;
-      if(!brandId||!name)continue;
+      // Metricool uses "label" as the brand name
+      const name=p.label||p.name||p.blogName||p.blog_name||p.title||'Marca '+blogId;
+      // Build a clean handle from the name
+      const rawHandle=p.handle||p.username||p.screen_name||name;
+      const handle=rawHandle.toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,50);
+      // Use blogId as the brand ID so it matches Metricool
+      const brandId='mc-'+blogId;
+      if(!blogId||!name)continue;
       const colors=['#7B6F64','#5B7FA6','#6B8E73','#8E6B7F','#7F8E6B','#6B7F8E'];
       const color=colors[synced%colors.length];
       try{
