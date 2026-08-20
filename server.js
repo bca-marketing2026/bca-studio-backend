@@ -178,9 +178,13 @@ async function syncBrandsFromMetricool(){
       const blogId=(p.id||p.blogId||p.blog_id||'').toString();
       // Metricool uses "label" as the brand name
       const name=p.label||p.name||p.blogName||p.blog_name||p.title||'Marca '+blogId;
-      // Build a clean handle from the name
-      const rawHandle=p.handle||p.username||p.screen_name||name;
-      const handle=rawHandle.toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,50);
+      // Get the real social handle - try each network in order
+      const igHandle=p.instagram&&p.instagram.username||p.instagram;
+      const fbHandle=p.facebook&&p.facebook.username||p.facebook;
+      const tkHandle=p.tiktok&&p.tiktok.username||p.tiktok;
+      const liHandle=p.linkedinCompany&&p.linkedinCompany.username||p.linkedinCompany;
+      const rawHandle=igHandle||fbHandle||tkHandle||liHandle||p.handle||p.username||p.screen_name||name;
+      const handle=(typeof rawHandle==='string'?rawHandle:name).toLowerCase().replace(/[^a-z0-9_-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,50);
       // Use blogId as the brand ID so it matches Metricool
       const brandId='mc-'+blogId;
       if(!blogId||!name)continue;
