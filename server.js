@@ -278,6 +278,18 @@ app.post('/api/brands',auth,async(req,res)=>{
   const{rows}=await db.query(`INSERT INTO brands (id,name,handle,color,industry,logo_url,client_email,client_name,phone,notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO UPDATE SET name=$2,handle=$3,color=$4,industry=$5,logo_url=$6,client_email=$7,client_name=$8,phone=$9,notes=$10 RETURNING *`,[brandId,name,handle,color,industry,logo_url,client_email,client_name,phone,notes]);
   res.json(rows[0]);
 });
+app.put('/api/brands/:id',auth,async(req,res)=>{
+  if(req.user.role!=='admin')return res.status(403).json({error:'Sin permiso'});
+  const{name,handle,color,industry,logo_url}=req.body;
+  const{rows}=await db.query('UPDATE brands SET name=COALESCE($1,name),handle=COALESCE($2,handle),color=COALESCE($3,color),industry=COALESCE($4,industry),logo_url=COALESCE($5,logo_url) WHERE id=$6 RETURNING *',[name,handle,color,industry,logo_url,req.params.id]);
+  res.json(rows[0]);
+});
+app.put('/api/brands/:id/update',auth,async(req,res)=>{
+  if(req.user.role!=='admin')return res.status(403).json({error:'Sin permiso'});
+  const{name,handle,color,industry,logo_url}=req.body;
+  const{rows}=await db.query('UPDATE brands SET name=COALESCE($1,name),handle=COALESCE($2,handle),color=COALESCE($3,color),industry=COALESCE($4,industry),logo_url=COALESCE($5,logo_url) WHERE id=$6 RETURNING *',[name,handle,color,industry,logo_url,req.params.id]);
+  res.json(rows[0]);
+});
 app.delete('/api/brands/:id',auth,async(req,res)=>{
   if(req.user.role!=='admin')return res.status(403).json({error:'Sin permiso'});
   await db.query('DELETE FROM posts WHERE brand_id=$1',[req.params.id]);
